@@ -4,8 +4,9 @@ const {
 
 const getBookmarks = async (req, res, next) => {
   try {
-    const bookmarks = await getAllBookmarks(req.user.id);
-    res.json({ status: 'success', data: { bookmarks } });
+    const result = await getAllBookmarks(req.user.id);
+    res.set('X-Data-Source', result.fromCache ? 'cache' : 'database');
+    res.json({ status: 'success', data: { bookmarks: result.data } });
   } catch (err) { next(err); }
 };
 

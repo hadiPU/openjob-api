@@ -18,11 +18,11 @@ const getDocumentById = async (id) => {
   return rows[0];
 };
 
-const createDocument = async ({ user_id, filename, url }) => {
+const createDocument = async ({ user_id, filename, originalname, size, url }) => {
   const id = uuidv4();
   await pool.query(
-    'INSERT INTO documents (id, user_id, filename, url) VALUES ($1,$2,$3,$4)',
-    [id, user_id, filename, url]
+    'INSERT INTO documents (id, user_id, filename, originalname, size, url) VALUES ($1,$2,$3,$4,$5,$6)',
+    [id, user_id, filename, originalname, size, url]
   );
   return { id, url };
 };

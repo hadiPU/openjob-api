@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
 const NotFoundError = require('../../../exceptions/NotFoundError');
 const InvariantError = require('../../../exceptions/InvariantError');
+const cache = require('../../../utils/cache');
 
 const createUser = async ({ name, email, password, role = 'user' }) => {
   const hashed = await bcrypt.hash(password, 10);
@@ -20,12 +21,17 @@ const createUser = async ({ name, email, password, role = 'user' }) => {
 };
 
 const getUserById = async (id) => {
+  const cacheKey = `user:${id}`;
+  const cached = await cache.get(cacheKey);
+  if (cached) return { ...cached, fromCache: true };
+
   const { rows } = await pool.query(
     'SELECT id, fullname AS name, email, role, created_at FROM users WHERE id=$1',
     [id]
   );
   if (!rows.length) throw new NotFoundError('User not found');
-  return rows[0];
+  await cache.set(cacheKey, rows[0]);
+  return { ...rows[0], fromCache: false };
 };
 
 module.exports = { createUser, getUserById };

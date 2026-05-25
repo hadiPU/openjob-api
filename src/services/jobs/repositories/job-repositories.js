@@ -4,14 +4,16 @@ const NotFoundError = require('../../../exceptions/NotFoundError');
 
 const getAllJobs = async ({ title, companyName } = {}) => {
   let query = `
-    SELECT j.*, c.name AS company_name, cat.name AS category_name
+    SELECT j.id, j.title, j.description, j.salary, j.location,
+           j.type, j.company_id, j.category_id, j.created_at,
+           j.job_type, j.experience_level, j.status,
+           c.name AS company_name
     FROM jobs j
     LEFT JOIN companies c ON j.company_id = c.id
     LEFT JOIN categories cat ON j.category_id = cat.id
     WHERE 1=1
   `;
   const params = [];
-
   if (title) {
     params.push(`%${title.toLowerCase()}%`);
     query += ` AND LOWER(j.title) LIKE $${params.length}`;
@@ -20,7 +22,6 @@ const getAllJobs = async ({ title, companyName } = {}) => {
     params.push(`%${companyName.toLowerCase()}%`);
     query += ` AND LOWER(c.name) LIKE $${params.length}`;
   }
-
   query += ' ORDER BY j.created_at DESC';
   const { rows } = await pool.query(query, params);
   return rows;
@@ -110,6 +111,8 @@ const updateJob = async (id, payload) => {
 };
 
 const deleteJob = async (id) => {
+  await pool.query('DELETE FROM applications WHERE job_id=$1', [id]);
+  await pool.query('DELETE FROM bookmarks WHERE job_id=$1', [id]);
   const { rowCount } = await pool.query('DELETE FROM jobs WHERE id=$1', [id]);
   if (!rowCount) throw new NotFoundError('Job not found');
 };

@@ -9,7 +9,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // All routes
 app.use(require('./routes'));
 
-// Global error handler — HARUS paling terakhir
+// Global error handler
 app.use(require('./middlewares/error'));
 
 const PORT = process.env.PORT || 3000;

@@ -6,8 +6,8 @@ const {
 
 const addApplication = async (req, res, next) => {
   try {
-    const id = await createApplication({ ...req.body, user_id: req.user.id });
-    res.status(201).json({ status: 'success', data: { id } });
+    const data = await createApplication({ ...req.body, user_id: req.user.id });
+    res.status(201).json({ status: 'success', data });
   } catch (err) { next(err); }
 };
 
@@ -20,21 +20,25 @@ const getApplications = async (req, res, next) => {
 
 const getApplicationsByUserHandler = async (req, res, next) => {
   try {
-    const applications = await getApplicationsByUser(req.params.userId);
-    res.json({ status: 'success', data: { applications } });
+    const result = await getApplicationsByUser(req.params.userId);
+    res.set('X-Data-Source', result.fromCache ? 'cache' : 'database');
+    res.json({ status: 'success', data: { applications: result.data } });
   } catch (err) { next(err); }
 };
 
 const getApplicationsByJobHandler = async (req, res, next) => {
   try {
-    const applications = await getApplicationsByJob(req.params.jobId);
-    res.json({ status: 'success', data: { applications } });
+    const result = await getApplicationsByJob(req.params.jobId);
+    res.set('X-Data-Source', result.fromCache ? 'cache' : 'database');
+    res.json({ status: 'success', data: { applications: result.data } });
   } catch (err) { next(err); }
 };
 
 const getApplication = async (req, res, next) => {
   try {
-    const application = await getApplicationById(req.params.id);
+    const result = await getApplicationById(req.params.id);
+    const { fromCache, ...application } = result;
+    res.set('X-Data-Source', fromCache ? 'cache' : 'database');
     res.json({ status: 'success', data: { ...application } });
   } catch (err) { next(err); }
 };

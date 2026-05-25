@@ -9,7 +9,9 @@ const registerUser = async (req, res, next) => {
 
 const getUser = async (req, res, next) => {
   try {
-    const user = await getUserById(req.params.id);
+    const result = await getUserById(req.params.id);
+    const { fromCache, ...user } = result;
+    res.set('X-Data-Source', fromCache ? 'cache' : 'database');
     res.json({ status: 'success', data: { ...user } });
   } catch (err) { next(err); }
 };

@@ -11,7 +11,9 @@ const getCompanies = async (req, res, next) => {
 
 const getCompany = async (req, res, next) => {
   try {
-    const company = await getCompanyById(req.params.id);
+    const result = await getCompanyById(req.params.id);
+    const { fromCache, ...company } = result;
+    res.set('X-Data-Source', fromCache ? 'cache' : 'database');
     res.json({ status: 'success', data: { ...company } });
   } catch (err) { next(err); }
 };
